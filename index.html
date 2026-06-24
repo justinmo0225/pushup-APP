@@ -288,7 +288,7 @@
   <div class="section-label">Reminders</div>
   <div class="notif-card">
     <div class="notif-text">
-      <div class="t1">Nudge every 4 hours</div>
+      <div class="t1">Check-ins at 8, 12, 4, 8</div>
       <div class="t2" id="notifStatus">Tells you what's left for today</div>
     </div>
     <button class="toggle-btn" id="notifToggle">Turn on</button>
@@ -478,7 +478,7 @@
     if(Notification.permission === 'denied'){
       status.textContent = 'Blocked in browser settings';
     } else if(on){
-      status.textContent = 'Pinging every 4hrs while open/installed';
+      status.textContent = 'Pings at 8am, 12pm, 4pm, 8pm';
     } else {
       status.textContent = "Tells you what's left for today";
     }
@@ -498,7 +498,7 @@
     if(perm === 'granted'){
       localStorage.setItem(NOTIF_KEY, '1');
       scheduleCheckin(true);
-      new Notification('The Climb', { body: "Reminders are on. You'll hear from us every 4 hours.", icon: 'icon-192.png' });
+      new Notification('The Climb', { body: "Reminders are on. You'll get check-ins at 8am, 12pm, 4pm, and 8pm.", icon: 'icon-192.png' });
     }
     updateNotifUI();
   });
@@ -514,22 +514,36 @@
   }
 
   let checkinTimer = null;
+  const PING_HOURS = [8, 12, 16, 20]; // fixed clock times: 8am, 12pm, 4pm, 8pm
+
+  function msUntilNextPing(){
+    const now = new Date();
+    const candidates = PING_HOURS.map(h => {
+      const d = new Date(now);
+      d.setHours(h, 0, 0, 0);
+      if(d <= now) d.setDate(d.getDate() + 1); // already passed today, use tomorrow
+      return d;
+    });
+    const next = candidates.reduce((a,b) => a < b ? a : b);
+    return next - now;
+  }
+
   function scheduleCheckin(immediate){
     if(checkinTimer) clearTimeout(checkinTimer);
-    const FOUR_HOURS = 4*60*60*1000;
-    function fire(){
+    function fireAndReschedule(){
       if(localStorage.getItem(NOTIF_KEY) === '1' && Notification.permission === 'granted'){
-        const hour = new Date().getHours();
-        // Quiet hours: skip pings between 12am and 8am (uses device's local timezone automatically)
-        if(hour >= 0 && hour < 8){
-          // skip silently, just reschedule
-        } else {
-          new Notification('The Climb', { body: remainingMessage(), icon: 'icon-192.png' });
-        }
+        new Notification('The Climb', { body: remainingMessage(), icon: 'icon-192.png' });
       }
-      checkinTimer = setTimeout(fire, FOUR_HOURS);
+      checkinTimer = setTimeout(fireAndReschedule, msUntilNextPing());
     }
-    checkinTimer = setTimeout(fire, immediate ? 5000 : FOUR_HOURS);
+    if(immediate){
+      // Send a one-time confirmation now, then align to the next fixed clock hour
+      checkinTimer = setTimeout(() => {
+        checkinTimer = setTimeout(fireAndReschedule, msUntilNextPing());
+      }, 5000);
+    } else {
+      checkinTimer = setTimeout(fireAndReschedule, msUntilNextPing());
+    }
   }
 
   // ---------- Service worker (for installed/PWA reliability) ----------
