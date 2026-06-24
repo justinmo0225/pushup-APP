@@ -3,20 +3,23 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<meta name="theme-color" content="#15130f">
+<meta name="theme-color" content="#14121d">
 <title>The Climb — Pushup Challenge</title>
 <link rel="manifest" href="manifest.json">
 <style>
   :root{
-    --bg: #15130f;
-    --bg-raised: #1d1a14;
-    --bg-card: #211e17;
-    --line: #34301f;
-    --coral: #ff5a36;
-    --coral-dim: #7a3322;
-    --cream: #f3ead9;
-    --cream-dim: #a39a83;
-    --green: #5fb878;
+    --bg: #14121d;
+    --bg-raised: #1c1929;
+    --bg-card: #211d30;
+    --line: #332e48;
+    --purple: #8f86f2;        /* forget-me-not periwinkle */
+    --purple-dim: #463f80;
+    --purple-soft: #d9d4ff;
+    --gold: #9bd49c;          /* snowdrop green — "target hit" accent */
+    --gold-dim: #3f5a40;
+    --gold-soft: #c9ecca;
+    --cream: #ece8f7;
+    --cream-dim: #9b93b8;
     --display: 'Archivo Black', 'Arial Black', sans-serif;
     --body: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
     --mono: 'JetBrains Mono', 'SF Mono', Consolas, monospace;
@@ -50,7 +53,7 @@
   }
   .eyebrow{
     font-family: var(--mono); font-size: 12px; letter-spacing: 0.12em;
-    text-transform: uppercase; color: var(--coral);
+    text-transform: uppercase; color: var(--purple);
   }
   .day-count{
     font-family: var(--mono); font-size: 12px; color: var(--cream-dim);
@@ -63,7 +66,7 @@
     text-transform: uppercase;
   }
   h1.title em{
-    font-style: normal; color: var(--coral);
+    font-style: normal; color: var(--purple);
   }
 
   /* ---------- STAIRCASE ---------- */
@@ -80,7 +83,7 @@
   }
   #staircase{ width: 100%; height: 110px; display:block; }
   .step-rect{ transition: fill 0.3s ease, opacity 0.3s ease; }
-  .step-today{ filter: drop-shadow(0 0 8px rgba(255,90,54,0.55)); }
+  .step-today{ filter: drop-shadow(0 0 8px rgba(143,134,242,0.55)); }
 
   /* ---------- TODAY CARD ---------- */
   .today-card{
@@ -96,7 +99,7 @@
     content:'';
     position:absolute; top:-40%; right:-20%;
     width: 220px; height: 220px;
-    background: radial-gradient(circle, rgba(255,90,54,0.16), transparent 70%);
+    background: radial-gradient(circle, rgba(143,134,242,0.18), transparent 70%);
     pointer-events:none;
   }
   .target-row{
@@ -117,18 +120,18 @@
   }
   .remaining-pill{
     font-family: var(--mono); font-size: 13px;
-    background: var(--coral-dim); color: #ffcfc0;
+    background: var(--purple-dim); color: var(--purple-soft);
     padding: 6px 12px; border-radius: 100px;
     white-space: nowrap;
   }
-  .remaining-pill.done{ background: rgba(95,184,120,0.18); color: var(--green); }
+  .remaining-pill.done{ background: rgba(155,212,156,0.18); color: var(--gold); }
 
   .progress-track{
     width:100%; height: 10px; background: var(--bg); border-radius: 6px;
     overflow:hidden; margin-bottom: 22px; border: 1px solid var(--line);
   }
   .progress-fill{
-    height:100%; background: linear-gradient(90deg, var(--coral-dim), var(--coral));
+    height:100%; background: linear-gradient(90deg, var(--purple-dim), var(--purple));
     border-radius: 6px; transition: width 0.4s cubic-bezier(.4,0,.2,1);
     width: 0%;
   }
@@ -140,9 +143,9 @@
     padding: 14px 0; border-radius: 12px; cursor:pointer;
     transition: transform 0.08s ease, border-color 0.15s ease;
   }
-  .log-btn:active{ transform: scale(0.96); border-color: var(--coral); }
+  .log-btn:active{ transform: scale(0.96); border-color: var(--purple); }
   .log-btn.primary{
-    flex: 2; background: var(--coral); border-color: var(--coral); color: #1a0d08;
+    flex: 2; background: var(--purple); border-color: var(--purple); color: #14121d;
     font-weight: 800;
   }
   .custom-log{
@@ -155,7 +158,7 @@
   }
   .custom-log input::placeholder{ color: var(--cream-dim); }
   .custom-log button{
-    background: transparent; border: 1px solid var(--coral); color: var(--coral);
+    background: transparent; border: 1px solid var(--purple); color: var(--purple);
     font-family: var(--mono); font-size: 13px; border-radius: 12px; padding: 0 18px;
     cursor:pointer;
   }
@@ -169,7 +172,7 @@
     border-radius: 14px; padding: 14px 8px; text-align:center;
   }
   .stat-num{
-    font-family: var(--display); font-size: 26px; color: var(--coral);
+    font-family: var(--display); font-size: 26px; color: var(--purple);
     line-height: 1;
   }
   .stat-label{
@@ -217,7 +220,7 @@
     border-radius: 100px; border: 1px solid var(--line); background: var(--bg);
     color: var(--cream-dim); cursor:pointer; white-space:nowrap;
   }
-  .toggle-btn.on{ background: var(--coral); border-color: var(--coral); color:#1a0d08; font-weight:700; }
+  .toggle-btn.on{ background: var(--purple); border-color: var(--purple); color:#14121d; font-weight:700; }
 
   footer{
     margin-top: auto; padding-top: 20px;
@@ -256,8 +259,9 @@
 
     <div class="log-row">
       <button class="log-btn" id="logTen">+10</button>
+      <button class="log-btn" id="logFifteen">+15</button>
+      <button class="log-btn" id="logTwenty">+20</button>
       <button class="log-btn" id="logTwentyFive">+25</button>
-      <button class="log-btn primary" id="logRest">Log rest of target</button>
     </div>
     <div class="custom-log">
       <input type="number" id="customAmt" placeholder="Custom amount" inputmode="numeric">
@@ -321,242 +325,8 @@
     const cur = new Date(dateStr+'T00:00:00');
     return Math.round((cur - start) / 86400000) + 1; // day 1 = start date
   }
-  function targetForDay(idx){ return START_BASE + (idx - 1); }
-
-  let state = loadState();
-  const today = todayStr();
-  if(!state.logs[today]) state.logs[today] = [];
-
-  function totalToday(){
-    return state.logs[today].reduce((s,e)=>s+e.amt, 0);
+  function dateForIndex(idx){
+    return todayStr(new Date(new Date(state.startDate+'T00:00:00').getTime() + (idx-1)*86400000));
   }
-
-  function computeStreak(idx){
-    // Counts consecutive days (ending today, or yesterday if today isn't done yet) where target was hit
-    let streak = 0;
-    let checkIdx = idx;
-    // if today isn't hit yet, start checking from yesterday so an in-progress day doesn't break the streak display
-    const todayTarget = targetForDay(idx);
-    if(totalToday() < todayTarget) checkIdx = idx - 1;
-    while(checkIdx >= 1){
-      const dStr = todayStr(new Date(new Date(state.startDate+'T00:00:00').getTime() + (checkIdx-1)*86400000));
-      const dayTarget = targetForDay(checkIdx);
-      const dayDone = (state.logs[dStr] || []).reduce((s,e)=>s+e.amt,0);
-      if(dayDone >= dayTarget){
-        streak++;
-        checkIdx--;
-      } else break;
-    }
-    // if today's already hit, include it
-    if(totalToday() >= todayTarget) streak++;
-    return streak;
-  }
-
-  function render(){
-    const idx = dayIndex(today);
-    const target = targetForDay(idx);
-    const done = totalToday();
-    const remaining = Math.max(target - done, 0);
-
-    document.getElementById('dayCount').textContent = 'Day ' + idx;
-    document.getElementById('dateLabel').textContent = new Date(today+'T00:00:00').toLocaleDateString(undefined,{weekday:'short', month:'short', day:'numeric'});
-    document.getElementById('targetNum').textContent = target;
-
-    const pill = document.getElementById('remainingPill');
-    if(remaining <= 0){
-      pill.textContent = 'Target hit ✓';
-      pill.classList.add('done');
-    } else {
-      pill.textContent = remaining + ' left';
-      pill.classList.remove('done');
-    }
-
-    const pct = Math.min(100, Math.round((done/target)*100));
-    document.getElementById('progressFill').style.width = pct + '%';
-
-    document.getElementById('statTotal').textContent = done;
-    document.getElementById('statSets').textContent = state.logs[today].length;
-    document.getElementById('statStreak').textContent = computeStreak(idx);
-
-    renderEntries();
-    renderStaircase(idx, target);
-  }
-
-  function renderEntries(){
-    const wrap = document.getElementById('logEntries');
-    const entries = state.logs[today];
-    if(!entries.length){
-      wrap.innerHTML = '<div class="empty-state">No reps logged yet today. Get after it.</div>';
-      return;
-    }
-    wrap.innerHTML = entries.slice().reverse().map((e, revIdx) => {
-      const realIdx = entries.length - 1 - revIdx;
-      const t = new Date(e.ts);
-      const time = t.toLocaleTimeString(undefined,{hour:'numeric', minute:'2-digit'});
-      return `<div class="log-entry">
-        <span class="time">${time}</span>
-        <span class="amt">+${e.amt}</span>
-        <button class="del" data-idx="${realIdx}" aria-label="Delete entry">✕</button>
-      </div>`;
-    }).join('');
-    wrap.querySelectorAll('.del').forEach(btn=>{
-      btn.addEventListener('click', ()=>{
-        const i = parseInt(btn.dataset.idx,10);
-        state.logs[today].splice(i,1);
-        saveState(); render();
-      });
-    });
-  }
-
-  function renderStaircase(idx, target){
-    const svg = document.getElementById('staircase');
-    const numSteps = 7; // show a trailing window of up to 7 days ending today
-    const firstIdx = Math.max(1, idx - numSteps + 1);
-    const days = [];
-    for(let i=firstIdx; i<=idx; i++) days.push(i);
-
-    const w = 440, h = 110, pad = 6;
-    const colW = (w - pad*2) / numSteps;
-    const maxTarget = targetForDay(idx);
-    const minTarget = targetForDay(firstIdx);
-    const range = Math.max(maxTarget - minTarget, 1);
-    const maxBarH = h - 26;
-
-    let bars = '';
-    days.forEach((d, i) => {
-      const t = targetForDay(d);
-      const hFrac = 0.35 + 0.65 * ((t - minTarget) / range);
-      const barH = maxBarH * hFrac;
-      const x = pad + i*colW + colW*0.15;
-      const barW = colW*0.7;
-      const y = h - 20 - barH;
-      const isToday = d === idx;
-      const dStr = todayStr(new Date(new Date(state.startDate+'T00:00:00').getTime() + (d-1)*86400000));
-      const dayDone = isToday ? totalToday() : (state.logs[dStr] ? state.logs[dStr].reduce((s,e)=>s+e.amt,0) : 0);
-      const hit = dayDone >= t;
-      const fill = isToday ? '#ff5a36' : (hit ? '#5fb878' : '#34301f');
-      const cls = isToday ? 'step-rect step-today' : 'step-rect';
-      bars += `<rect class="${cls}" x="${x}" y="${y}" width="${barW}" height="${barH}" rx="5" fill="${fill}" opacity="${isToday?1:0.85}"/>`;
-      bars += `<text x="${x+barW/2}" y="${y-8}" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="11" fill="${isToday?'#ff5a36':'#a39a83'}" font-weight="${isToday?'700':'400'}">${t}</text>`;
-    });
-    svg.innerHTML = bars;
-  }
-
-  function logAmount(amt){
-    if(!amt || amt <= 0) return;
-    state.logs[today].push({amt: Math.round(amt), ts: Date.now()});
-    saveState();
-    render();
-  }
-
-  document.getElementById('logTen').addEventListener('click', ()=> logAmount(10));
-  document.getElementById('logTwentyFive').addEventListener('click', ()=> logAmount(25));
-  document.getElementById('logRest').addEventListener('click', ()=>{
-    const idx = dayIndex(today);
-    const target = targetForDay(idx);
-    const remaining = target - totalToday();
-    logAmount(remaining > 0 ? remaining : 0);
-  });
-  document.getElementById('logCustom').addEventListener('click', ()=>{
-    const input = document.getElementById('customAmt');
-    const val = parseInt(input.value, 10);
-    if(val > 0){ logAmount(val); input.value=''; }
-  });
-  document.getElementById('customAmt').addEventListener('keydown', (e)=>{
-    if(e.key === 'Enter') document.getElementById('logCustom').click();
-  });
-
-  // ---------- Notifications ----------
-  const NOTIF_KEY = 'pushupChallenge_notifOn';
-  const toggle = document.getElementById('notifToggle');
-  const status = document.getElementById('notifStatus');
-
-  function updateNotifUI(){
-    const on = localStorage.getItem(NOTIF_KEY) === '1' && Notification.permission === 'granted';
-    toggle.textContent = on ? 'On' : 'Turn on';
-    toggle.classList.toggle('on', on);
-    if(Notification.permission === 'denied'){
-      status.textContent = 'Blocked in browser settings';
-    } else if(on){
-      status.textContent = 'Pings at 8am, 12pm, 4pm, 8pm';
-    } else {
-      status.textContent = "Tells you what's left for today";
-    }
-  }
-
-  toggle.addEventListener('click', async ()=>{
-    if(localStorage.getItem(NOTIF_KEY) === '1'){
-      localStorage.setItem(NOTIF_KEY, '0');
-      updateNotifUI();
-      return;
-    }
-    if(!('Notification' in window)){
-      alert('Notifications are not supported in this browser.');
-      return;
-    }
-    const perm = await Notification.requestPermission();
-    if(perm === 'granted'){
-      localStorage.setItem(NOTIF_KEY, '1');
-      scheduleCheckin(true);
-      new Notification('The Climb', { body: "Reminders are on. You'll get check-ins at 8am, 12pm, 4pm, and 8pm.", icon: 'icon-192.png' });
-    }
-    updateNotifUI();
-  });
-
-  function remainingMessage(){
-    const idx = dayIndex(todayStr());
-    const target = targetForDay(idx);
-    const t = todayStr();
-    const done = (state.logs[t] || []).reduce((s,e)=>s+e.amt,0);
-    const remaining = Math.max(target - done, 0);
-    if(remaining <= 0) return `Day ${idx} target (${target}) is done. Get ahead or rest up.`;
-    return `Day ${idx}: ${remaining} of ${target} pushups left today.`;
-  }
-
-  let checkinTimer = null;
-  const PING_HOURS = [8, 12, 16, 20]; // fixed clock times: 8am, 12pm, 4pm, 8pm
-
-  function msUntilNextPing(){
-    const now = new Date();
-    const candidates = PING_HOURS.map(h => {
-      const d = new Date(now);
-      d.setHours(h, 0, 0, 0);
-      if(d <= now) d.setDate(d.getDate() + 1); // already passed today, use tomorrow
-      return d;
-    });
-    const next = candidates.reduce((a,b) => a < b ? a : b);
-    return next - now;
-  }
-
-  function scheduleCheckin(immediate){
-    if(checkinTimer) clearTimeout(checkinTimer);
-    function fireAndReschedule(){
-      if(localStorage.getItem(NOTIF_KEY) === '1' && Notification.permission === 'granted'){
-        new Notification('The Climb', { body: remainingMessage(), icon: 'icon-192.png' });
-      }
-      checkinTimer = setTimeout(fireAndReschedule, msUntilNextPing());
-    }
-    if(immediate){
-      // Send a one-time confirmation now, then align to the next fixed clock hour
-      checkinTimer = setTimeout(() => {
-        checkinTimer = setTimeout(fireAndReschedule, msUntilNextPing());
-      }, 5000);
-    } else {
-      checkinTimer = setTimeout(fireAndReschedule, msUntilNextPing());
-    }
-  }
-
-  // ---------- Service worker (for installed/PWA reliability) ----------
-  if('serviceWorker' in navigator){
-    navigator.serviceWorker.register('sw.js').catch(()=>{});
-  }
-
-  updateNotifUI();
-  if(localStorage.getItem(NOTIF_KEY) === '1' && Notification.permission === 'granted'){
-    scheduleCheckin(false);
-  }
-  render();
-})();
-</script>
-</body>
-</html>
+  // The target only climbs by +1 AFTER a day whose target was hit.
+  // A failed or
