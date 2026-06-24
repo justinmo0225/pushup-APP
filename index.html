@@ -3,20 +3,20 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-<meta name="theme-color" content="#15130f">
+<meta name="theme-color" content="#14121d">
 <title>The Climb — Pushup Challenge</title>
 <link rel="manifest" href="manifest.json">
 <style>
   :root{
-    --bg: #15130f;
-    --bg-raised: #1d1a14;
-    --bg-card: #211e17;
-    --line: #34301f;
-    --coral: #ff5a36;
-    --coral-dim: #7a3322;
-    --cream: #f3ead9;
-    --cream-dim: #a39a83;
-    --green: #5fb878;
+    --bg: #14121d;
+    --bg-raised: #1c1929;
+    --bg-card: #211d30;
+    --line: #332e48;
+    --coral: #8f86f2;        /* forget-me-not periwinkle */
+    --coral-dim: #463f80;
+    --cream: #ece8f7;
+    --cream-dim: #9b93b8;
+    --green: #9bd49c;        /* snowdrop green */
     --display: 'Archivo Black', 'Arial Black', sans-serif;
     --body: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
     --mono: 'JetBrains Mono', 'SF Mono', Consolas, monospace;
@@ -80,7 +80,7 @@
   }
   #staircase{ width: 100%; height: 110px; display:block; }
   .step-rect{ transition: fill 0.3s ease, opacity 0.3s ease; }
-  .step-today{ filter: drop-shadow(0 0 8px rgba(255,90,54,0.55)); }
+  .step-today{ filter: drop-shadow(0 0 8px rgba(143,134,242,0.55)); }
 
   /* ---------- TODAY CARD ---------- */
   .today-card{
@@ -96,7 +96,7 @@
     content:'';
     position:absolute; top:-40%; right:-20%;
     width: 220px; height: 220px;
-    background: radial-gradient(circle, rgba(255,90,54,0.16), transparent 70%);
+    background: radial-gradient(circle, rgba(143,134,242,0.18), transparent 70%);
     pointer-events:none;
   }
   .target-row{
@@ -117,11 +117,11 @@
   }
   .remaining-pill{
     font-family: var(--mono); font-size: 13px;
-    background: var(--coral-dim); color: #ffcfc0;
+    background: var(--coral-dim); color: #d9d4ff;
     padding: 6px 12px; border-radius: 100px;
     white-space: nowrap;
   }
-  .remaining-pill.done{ background: rgba(95,184,120,0.18); color: var(--green); }
+  .remaining-pill.done{ background: rgba(155,212,156,0.18); color: var(--green); }
 
   .progress-track{
     width:100%; height: 10px; background: var(--bg); border-radius: 6px;
@@ -142,7 +142,7 @@
   }
   .log-btn:active{ transform: scale(0.96); border-color: var(--coral); }
   .log-btn.primary{
-    flex: 2; background: var(--coral); border-color: var(--coral); color: #1a0d08;
+    flex: 2; background: var(--coral); border-color: var(--coral); color: #14121d;
     font-weight: 800;
   }
   .custom-log{
@@ -217,7 +217,7 @@
     border-radius: 100px; border: 1px solid var(--line); background: var(--bg);
     color: var(--cream-dim); cursor:pointer; white-space:nowrap;
   }
-  .toggle-btn.on{ background: var(--coral); border-color: var(--coral); color:#1a0d08; font-weight:700; }
+  .toggle-btn.on{ background: var(--coral); border-color: var(--coral); color:#14121d; font-weight:700; }
 
   footer{
     margin-top: auto; padding-top: 20px;
@@ -322,7 +322,25 @@
     const cur = new Date(dateStr+'T00:00:00');
     return Math.round((cur - start) / 86400000) + 1; // day 1 = start date
   }
-  function targetForDay(idx){ return START_BASE + (idx - 1); }
+  function dateForIndex(idx){
+    return todayStr(new Date(new Date(state.startDate+'T00:00:00').getTime() + (idx-1)*86400000));
+  }
+  // The target only climbs by +1 AFTER a day whose target was hit.
+  // A failed or missed day holds the target where it is until it's finally passed.
+  function targetForDate(dateStr){
+    let target = START_BASE;
+    const end = new Date(dateStr+'T00:00:00');
+    let cur = new Date(state.startDate+'T00:00:00');
+    while(cur < end){
+      const cs = todayStr(cur);
+      const done = (state.logs[cs] || []).reduce((s,e)=>s+e.amt,0);
+      if(done >= target) target += 1; // passed that day -> next day goes up by 1
+      cur.setDate(cur.getDate()+1);
+    }
+    return target;
+  }
+  // 1-based day index -> target, via the success-based progression above
+  function targetForDay(idx){ return targetForDate(dateForIndex(idx)); }
 
   let state = loadState();
   const today = todayStr();
@@ -435,10 +453,10 @@
       const dStr = todayStr(new Date(new Date(state.startDate+'T00:00:00').getTime() + (d-1)*86400000));
       const dayDone = isToday ? totalToday() : (state.logs[dStr] ? state.logs[dStr].reduce((s,e)=>s+e.amt,0) : 0);
       const hit = dayDone >= t;
-      const fill = isToday ? '#ff5a36' : (hit ? '#5fb878' : '#34301f');
+      const fill = isToday ? '#8f86f2' : (hit ? '#9bd49c' : '#332e48');
       const cls = isToday ? 'step-rect step-today' : 'step-rect';
-      bars += `<rect class="${cls}" x="${x}" y="${y}" width="${barW}" height="${barH}" rx="5" fill="${fill}" opacity="${isToday?1:0.85}"/>`;
-      bars += `<text x="${x+barW/2}" y="${y-8}" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="11" fill="${isToday?'#ff5a36':'#a39a83'}" font-weight="${isToday?'700':'400'}">${t}</text>`;
+      bars += `<rect class="${cls}" x="${x}" y="${y}" width="${barW}" height="${barH}" rx="5" fill="${fill}" stroke="#ffffff" stroke-width="1.5" vector-effect="non-scaling-stroke" opacity="${isToday?1:0.85}"/>`;
+      bars += `<text x="${x+barW/2}" y="${y-8}" text-anchor="middle" font-family="JetBrains Mono, monospace" font-size="11" fill="${isToday?'#8f86f2':'#9b93b8'}" font-weight="${isToday?'700':'400'}">${t}</text>`;
     });
     svg.innerHTML = bars;
   }
