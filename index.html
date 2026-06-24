@@ -256,8 +256,9 @@
 
     <div class="log-row">
       <button class="log-btn" id="logTen">+10</button>
+      <button class="log-btn" id="logFifteen">+15</button>
+      <button class="log-btn" id="logTwenty">+20</button>
       <button class="log-btn" id="logTwentyFive">+25</button>
-      <button class="log-btn primary" id="logRest">Log rest of target</button>
     </div>
     <div class="custom-log">
       <input type="number" id="customAmt" placeholder="Custom amount" inputmode="numeric">
@@ -450,13 +451,9 @@
   }
 
   document.getElementById('logTen').addEventListener('click', ()=> logAmount(10));
+  document.getElementById('logFifteen').addEventListener('click', ()=> logAmount(15));
+  document.getElementById('logTwenty').addEventListener('click', ()=> logAmount(20));
   document.getElementById('logTwentyFive').addEventListener('click', ()=> logAmount(25));
-  document.getElementById('logRest').addEventListener('click', ()=>{
-    const idx = dayIndex(today);
-    const target = targetForDay(idx);
-    const remaining = target - totalToday();
-    logAmount(remaining > 0 ? remaining : 0);
-  });
   document.getElementById('logCustom').addEventListener('click', ()=>{
     const input = document.getElementById('customAmt');
     const val = parseInt(input.value, 10);
