@@ -69,7 +69,7 @@
   /* ---------- STAIRCASE ---------- */
   .staircase-wrap{
     background: var(--bg-card);
-    border: 1px solid var(--line);
+    border: 1px solid var(--green);
     border-radius: 18px;
     padding: 20px 18px 14px;
     margin-bottom: 18px;
@@ -85,7 +85,7 @@
   /* ---------- TODAY CARD ---------- */
   .today-card{
     background: linear-gradient(165deg, var(--bg-raised), var(--bg-card));
-    border: 1px solid var(--line);
+    border: 1px solid var(--green);
     border-radius: 22px;
     padding: 28px 24px;
     margin-bottom: 18px;
@@ -165,13 +165,14 @@
     display:flex; gap: 10px; margin-bottom: 18px;
   }
   .stat-box{
-    flex:1; background: var(--bg-card); border: 1px solid var(--line);
+    flex:1; background: var(--bg-card); border: 1px solid var(--green);
     border-radius: 14px; padding: 14px 8px; text-align:center;
   }
   .stat-num{
     font-family: var(--display); font-size: 26px; color: var(--coral);
     line-height: 1;
   }
+  .stat-num.stat-date{ font-size: 18px; }
   .stat-label{
     font-family: var(--mono); font-size: 10px; color: var(--cream-dim);
     text-transform: uppercase; letter-spacing: 0.06em; margin-top: 6px;
@@ -182,8 +183,12 @@
     font-family: var(--mono); font-size: 12px; color: var(--cream-dim);
     text-transform: uppercase; letter-spacing: 0.08em; margin: 4px 0 10px;
   }
+  .divider{
+    border: none; border-top: 1px solid rgba(255,255,255,0.40);
+    width: 100%; margin: 36px 0;
+  }
   .log-entries{
-    background: var(--bg-card); border: 1px solid var(--line);
+    background: var(--bg-card); border: 1px solid var(--green);
     border-radius: 16px; overflow:hidden; margin-bottom: 18px;
   }
   .log-entry{
@@ -286,13 +291,36 @@
     <div class="empty-state">No reps logged yet today. Get after it.</div>
   </div>
 
-  <div class="section-label">Reminders</div>
-  <div class="notif-card">
-    <div class="notif-text">
-      <div class="t1">Nudge every 4 hours</div>
-      <div class="t2" id="notifStatus">Tells you what's left for today</div>
+  <hr class="divider">
+
+  <div class="section-label">Lifetime</div>
+  <div class="stats-row">
+    <div class="stat-box">
+      <div class="stat-num" id="lifeTotal">0</div>
+      <div class="stat-label">Total pushups</div>
     </div>
-    <button class="toggle-btn" id="notifToggle">Turn on</button>
+    <div class="stat-box">
+      <div class="stat-num stat-date" id="lifeBegin">—</div>
+      <div class="stat-label">Begin date</div>
+    </div>
+    <div class="stat-box">
+      <div class="stat-num" id="lifeRate">0%</div>
+      <div class="stat-label">Success rate</div>
+    </div>
+  </div>
+  <div class="stats-row">
+    <div class="stat-box">
+      <div class="stat-num" id="lifeMostReps">0</div>
+      <div class="stat-label">Most in a day</div>
+    </div>
+    <div class="stat-box">
+      <div class="stat-num" id="lifeMostSets">0</div>
+      <div class="stat-label">Most sets</div>
+    </div>
+    <div class="stat-box">
+      <div class="stat-num" id="lifeLongest">0</div>
+      <div class="stat-label">Longest streak</div>
+    </div>
   </div>
 
   <footer>Built for one person. Stored on this device only.</footer>
@@ -351,14 +379,15 @@
   }
 
   function computeStreak(idx){
-    // Counts consecutive days (ending today, or yesterday if today isn't done yet) where target was hit
+    // Consecutive days where the target was hit, ending today (if today is already
+    // hit) or yesterday (so an in-progress today doesn't break the displayed streak).
     let streak = 0;
-    let checkIdx = idx;
-    // if today isn't hit yet, start checking from yesterday so an in-progress day doesn't break the streak display
-    const todayTarget = targetForDay(idx);
-    if(totalToday() < todayTarget) checkIdx = idx - 1;
+    // Count today only if it's already been hit.
+    if(totalToday() >= targetForDay(idx)) streak++;
+    // Walk backwards from yesterday, counting consecutive completed days.
+    let checkIdx = idx - 1;
     while(checkIdx >= 1){
-      const dStr = todayStr(new Date(new Date(state.startDate+'T00:00:00').getTime() + (checkIdx-1)*86400000));
+      const dStr = dateForIndex(checkIdx);
       const dayTarget = targetForDay(checkIdx);
       const dayDone = (state.logs[dStr] || []).reduce((s,e)=>s+e.amt,0);
       if(dayDone >= dayTarget){
@@ -366,8 +395,6 @@
         checkIdx--;
       } else break;
     }
-    // if today's already hit, include it
-    if(totalToday() >= todayTarget) streak++;
     return streak;
   }
 
@@ -399,6 +426,37 @@
 
     renderEntries();
     renderStaircase(idx, target);
+    renderLifetime();
+  }
+
+  function renderLifetime(){
+    const idx = dayIndex(today);
+    // Totals across every logged day
+    let totalReps = 0, mostInDay = 0, mostSets = 0;
+    for(const k in state.logs){
+      const entries = state.logs[k] || [];
+      const sum = entries.reduce((s,e)=>s+e.amt, 0);
+      totalReps += sum;
+      if(sum > mostInDay) mostInDay = sum;
+      if(entries.length > mostSets) mostSets = entries.length;
+    }
+    // Pass rate + longest streak over days 1..today
+    let passDays = 0, run = 0, longest = 0;
+    for(let d=1; d<=idx; d++){
+      const done = (d === idx) ? totalToday()
+        : (state.logs[dateForIndex(d)] || []).reduce((s,e)=>s+e.amt, 0);
+      if(done >= targetForDay(d)){ passDays++; run++; if(run > longest) longest = run; }
+      else run = 0;
+    }
+    const totalDays = Math.max(idx, 1);
+    const rate = Math.round((passDays / totalDays) * 100);
+
+    document.getElementById('lifeTotal').textContent = totalReps;
+    document.getElementById('lifeBegin').textContent = new Date(state.startDate+'T00:00:00').toLocaleDateString(undefined,{month:'short', day:'numeric'});
+    document.getElementById('lifeRate').textContent = rate + '%';
+    document.getElementById('lifeMostReps').textContent = mostInDay;
+    document.getElementById('lifeMostSets').textContent = mostSets;
+    document.getElementById('lifeLongest').textContent = longest;
   }
 
   function renderEntries(){
@@ -481,81 +539,11 @@
     if(e.key === 'Enter') document.getElementById('logCustom').click();
   });
 
-  // ---------- Notifications ----------
-  const NOTIF_KEY = 'pushupChallenge_notifOn';
-  const toggle = document.getElementById('notifToggle');
-  const status = document.getElementById('notifStatus');
-
-  function updateNotifUI(){
-    const on = localStorage.getItem(NOTIF_KEY) === '1' && Notification.permission === 'granted';
-    toggle.textContent = on ? 'On' : 'Turn on';
-    toggle.classList.toggle('on', on);
-    if(Notification.permission === 'denied'){
-      status.textContent = 'Blocked in browser settings';
-    } else if(on){
-      status.textContent = 'Pinging every 4hrs while open/installed';
-    } else {
-      status.textContent = "Tells you what's left for today";
-    }
-  }
-
-  toggle.addEventListener('click', async ()=>{
-    if(localStorage.getItem(NOTIF_KEY) === '1'){
-      localStorage.setItem(NOTIF_KEY, '0');
-      updateNotifUI();
-      return;
-    }
-    if(!('Notification' in window)){
-      alert('Notifications are not supported in this browser.');
-      return;
-    }
-    const perm = await Notification.requestPermission();
-    if(perm === 'granted'){
-      localStorage.setItem(NOTIF_KEY, '1');
-      scheduleCheckin(true);
-      new Notification('The Climb', { body: "Reminders are on. You'll hear from us every 4 hours.", icon: 'icon-192.png' });
-    }
-    updateNotifUI();
-  });
-
-  function remainingMessage(){
-    const idx = dayIndex(todayStr());
-    const target = targetForDay(idx);
-    const t = todayStr();
-    const done = (state.logs[t] || []).reduce((s,e)=>s+e.amt,0);
-    const remaining = Math.max(target - done, 0);
-    if(remaining <= 0) return `Day ${idx} target (${target}) is done. Get ahead or rest up.`;
-    return `Day ${idx}: ${remaining} of ${target} pushups left today.`;
-  }
-
-  let checkinTimer = null;
-  function scheduleCheckin(immediate){
-    if(checkinTimer) clearTimeout(checkinTimer);
-    const FOUR_HOURS = 4*60*60*1000;
-    function fire(){
-      if(localStorage.getItem(NOTIF_KEY) === '1' && Notification.permission === 'granted'){
-        const hour = new Date().getHours();
-        // Quiet hours: skip pings between 12am and 8am (uses device's local timezone automatically)
-        if(hour >= 0 && hour < 8){
-          // skip silently, just reschedule
-        } else {
-          new Notification('The Climb', { body: remainingMessage(), icon: 'icon-192.png' });
-        }
-      }
-      checkinTimer = setTimeout(fire, FOUR_HOURS);
-    }
-    checkinTimer = setTimeout(fire, immediate ? 5000 : FOUR_HOURS);
-  }
-
   // ---------- Service worker (for installed/PWA reliability) ----------
   if('serviceWorker' in navigator){
     navigator.serviceWorker.register('sw.js').catch(()=>{});
   }
 
-  updateNotifUI();
-  if(localStorage.getItem(NOTIF_KEY) === '1' && Notification.permission === 'granted'){
-    scheduleCheckin(false);
-  }
   render();
 })();
 </script>
